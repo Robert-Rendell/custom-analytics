@@ -28,9 +28,9 @@ export class CustomAnalyticsStack extends cdk.Stack {
       displayName: "Custom Analytics Topic",
     });
 
-    const emailServiceLambda = lambda.Function.fromFunctionArn(
+    const emailFunction = lambda.Function.fromFunctionArn(
       this,
-      "ExistingLambdaFunction",
+      "EmailFunction",
       process.env.EMAIL_FUNCTION_ARN,
     );
 
@@ -44,7 +44,7 @@ export class CustomAnalyticsStack extends cdk.Stack {
     topic.grantPublish(requestFunction);
 
     // Fan out to subscribers
-    topic.addSubscription(new subs.LambdaSubscription(emailServiceLambda));
+    topic.addSubscription(new subs.LambdaSubscription(emailFunction));
     topic.addSubscription(new subs.LambdaSubscription(pageViewFunction));
   }
 }
