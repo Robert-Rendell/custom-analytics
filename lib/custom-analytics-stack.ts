@@ -22,6 +22,7 @@ export class CustomAnalyticsStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_20_X,
       code: lambda.Code.fromAsset("lambda/request"),
       handler: "request.handler",
+      timeout: cdk.Duration.seconds(10),
     });
 
     const topic = new sns.Topic(this, "CustomAnalyticsTopic", {
@@ -38,6 +39,7 @@ export class CustomAnalyticsStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_20_X,
       code: lambda.Code.fromAsset("lambda/page-view"),
       handler: "page-view.function.handler",
+      timeout: cdk.Duration.seconds(10),
     });
 
     // Add trigger
@@ -46,5 +48,10 @@ export class CustomAnalyticsStack extends cdk.Stack {
     // Fan out to subscribers
     topic.addSubscription(new subs.LambdaSubscription(emailFunction));
     topic.addSubscription(new subs.LambdaSubscription(pageViewFunction));
+
+    // Define a CloudFormation output for the entry point function ARN
+    new cdk.CfnOutput(this, "RequestFunctionARN", {
+      value: requestFunction.functionArn,
+    });
   }
 }
