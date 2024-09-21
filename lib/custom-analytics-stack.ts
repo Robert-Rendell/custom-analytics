@@ -4,46 +4,47 @@ import * as subs from "aws-cdk-lib/aws-sns-subscriptions";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as iam from "aws-cdk-lib/aws-iam"; // For granting permissions
 import { Construct } from "constructs";
+import { config } from "dotenv";
+
+config();
 
 export class CustomAnalyticsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+    if (!process.env.EMAIL_FUNCTION_ARN) {
+      throw Error(
+        "Missing required environment variables (EMAIL_FUNCTION_ARN)",
+      );
+    }
 
-    // Create an SNS Topic
-    const topic = new sns.Topic(this, "MySNSTopic", {
-      displayName: "My SNS Topic",
+    // Entry point for the stack
+    const requestFunction = new lambda.Function(this, "RequestFunction", {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      code: lambda.Code.fromAsset("lambda/request"),
+      handler: "request.handler",
     });
 
-    // Define the existing Lambda function by its ARN
-    const existingLambdaArn =
-      "arn:aws:lambda:<region>:<account-id>:function:<existing-function-name>";
-    const existingLambda = lambda.Function.fromFunctionArn(
+    const topic = new sns.Topic(this, "CustomAnalyticsTopic", {
+      displayName: "Custom Analytics Topic",
+    });
+
+    const emailServiceLambda = lambda.Function.fromFunctionArn(
       this,
       "ExistingLambdaFunction",
-      existingLambdaArn,
+      process.env.EMAIL_FUNCTION_ARN,
     );
 
-    // Create the second (new) Lambda function
-    const newLambdaFunction = new lambda.Function(this, "NewLambdaFunction", {
+    const pageViewFunction = new lambda.Function(this, "PageViewFunction", {
       runtime: lambda.Runtime.NODEJS_20_X,
-      code: lambda.Code.fromAsset("lambda"), // Path to your new lambda code
-      handler: "function2.handler", // Handler for the new Lambda function
+      code: lambda.Code.fromAsset("lambda/page-view"),
+      handler: "page-view.function.handler",
     });
 
-    // Create a Lambda function that publishes to the SNS topic
-    const publisherLambda = new lambda.Function(this, "PublisherLambda", {
-      runtime: lambda.Runtime.NODEJS_20_X,
-      code: lambda.Code.fromAsset("lambda"),
-      handler: "publisher.handler",
-    });
+    // Add trigger
+    topic.grantPublish(requestFunction);
 
-    // Grant publish permission to the publisher Lambda
-    topic.grantPublish(publisherLambda);
-
-    // Subscribe existing Lambda to SNS Topic
-    topic.addSubscription(new subs.LambdaSubscription(existingLambda));
-
-    // Subscribe new Lambda to SNS Topic
-    topic.addSubscription(new subs.LambdaSubscription(newLambdaFunction));
+    // Fan out to subscribers
+    topic.addSubscription(new subs.LambdaSubscription(emailServiceLambda));
+    topic.addSubscription(new subs.LambdaSubscription(pageViewFunction));
   }
 }

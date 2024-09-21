@@ -1,7 +1,8 @@
 const AWS = require("aws-sdk");
 const sns = new AWS.SNS();
 
-exports.handler = async (event: any) => {
+export async function handler(event: any) {
+  console.log(event);
   const params = {
     Message: "Hello from Lambda to SNS!", // Message to publish
     TopicArn: process.env.TOPIC_ARN, // Pass the topic ARN as an environment variable
@@ -21,4 +22,4 @@ exports.handler = async (event: any) => {
       body: JSON.stringify({ error: "Error publishing message" }),
     };
   }
-};
+}
