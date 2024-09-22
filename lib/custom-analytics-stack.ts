@@ -12,7 +12,10 @@ config();
 export class CustomAnalyticsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-    if (!process.env.EMAIL_FUNCTION_ARN || !process.env.VPNInfoServiceAPIKey) {
+    if (
+      !process.env.EMAIL_FUNCTION_ARN ||
+      !process.env.VPN_INFO_SERVICE_API_KEY
+    ) {
       throw Error(
         "Missing required environment variables (EMAIL_FUNCTION_ARN, VPN_INFO_SERVICE_API_KEY)",
       );
@@ -30,7 +33,7 @@ export class CustomAnalyticsStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(10),
       environment: {
         TOPIC_ARN: topic.topicArn,
-        VPN_INFO_SERVICE_API_KEY: process.env.VPNInfoServiceAPIKey,
+        VPN_INFO_SERVICE_API_KEY: process.env.VPN_INFO_SERVICE_API_KEY,
       },
     });
 

@@ -1,7 +1,5 @@
 import { handler } from "../lambda/request/request-function";
-import {
-  SNSClient,
-} from "@aws-sdk/client-sns";
+import { SNSClient } from "@aws-sdk/client-sns";
 
 jest.mock("@aws-sdk/client-sns");
 
@@ -11,11 +9,11 @@ describe("RequestFunction", () => {
   beforeAll(() => {
     mockSend = jest.spyOn(SNSClient.prototype, "send").mockImplementation();
     jest.spyOn(console, "log").mockImplementation();
-  })
+  });
 
   afterAll(() => {
     jest.restoreAllMocks();
-  })
+  });
   test("runs without throwing errors", async () => {
     const mockedFetch = {
       location: {
@@ -31,11 +29,11 @@ describe("RequestFunction", () => {
       security: {
         vpn: true,
       },
-    }
-    jest.spyOn(global, 'fetch').mockResolvedValue({
+    };
+    jest.spyOn(global, "fetch").mockResolvedValue({
       json: () => Promise.resolve(mockedFetch),
     } as any);
-    
+
     let errors;
     try {
       await handler({
