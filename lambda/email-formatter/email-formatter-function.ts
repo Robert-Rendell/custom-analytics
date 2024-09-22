@@ -11,9 +11,14 @@ export async function handler(event: SNSEvent): Promise<void> {
     throw Error("Missing required environment variables (EMAIL_FUNCTION_ARN)");
   }
 
+  const payload = {
+    subject: "New Page View",
+    text: message,
+  };
+
   const params = {
     FunctionName: process.env.EMAIL_FUNCTION_ARN,
-    Payload: JSON.stringify(message),
+    Payload: JSON.stringify(payload),
   };
 
   try {
