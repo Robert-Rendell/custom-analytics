@@ -1,15 +1,16 @@
-const AWS = require("aws-sdk");
-const sns = new AWS.SNS();
+import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
+
+const snsClient = new SNSClient();
 
 export async function handler(event: any) {
-  console.log(event);
   const params = {
     Message: "Hello from Lambda to SNS!", // Message to publish
     TopicArn: process.env.TOPIC_ARN, // Pass the topic ARN as an environment variable
   };
 
   try {
-    const result = await sns.publish(params).promise();
+    const command = new PublishCommand(params);
+    const result = await snsClient.send(command);
     console.log("Message published to SNS:", result);
     return {
       statusCode: 200,

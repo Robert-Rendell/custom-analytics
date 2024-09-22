@@ -17,16 +17,19 @@ export class CustomAnalyticsStack extends cdk.Stack {
       );
     }
 
+    const topic = new sns.Topic(this, "CustomAnalyticsTopic", {
+      displayName: "Custom Analytics Topic",
+    });
+
     // Entry point for the stack
     const requestFunction = new lambda.Function(this, "RequestFunction", {
       runtime: lambda.Runtime.NODEJS_20_X,
       code: lambda.Code.fromAsset("lambda/request"),
-      handler: "request.handler",
+      handler: "request-function.handler",
       timeout: cdk.Duration.seconds(10),
-    });
-
-    const topic = new sns.Topic(this, "CustomAnalyticsTopic", {
-      displayName: "Custom Analytics Topic",
+      environment: {
+        TOPIC_ARN: topic.topicArn,
+      },
     });
 
     const emailFunction = lambda.Function.fromFunctionArn(
@@ -38,11 +41,10 @@ export class CustomAnalyticsStack extends cdk.Stack {
     const pageViewFunction = new lambda.Function(this, "PageViewFunction", {
       runtime: lambda.Runtime.NODEJS_20_X,
       code: lambda.Code.fromAsset("lambda/page-view"),
-      handler: "page-view.function.handler",
+      handler: "page-view-function.handler",
       timeout: cdk.Duration.seconds(10),
     });
 
-    // Add trigger
     topic.grantPublish(requestFunction);
 
     // Fan out to subscribers
