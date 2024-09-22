@@ -11,20 +11,19 @@ const snsClient = new SNSClient();
 
 const isValidEvent = (event: any): event is RequestFnEventBody => {
   return event && event.browserAgent && event.ipAddress && event.dateTime;
-}
+};
 
-export async function handler(event: any) {
+export async function handler(event: any | RequestFnEventBody) {
   if (!isValidEvent(event)) {
-   return "Missing one or more required fields in payload: browserAgent, ipAddress, dateTime"; 
+    throw new Error(
+      "Missing one or more required fields in payload: browserAgent, ipAddress, dateTime",
+    );
   }
 
   const vpnInfo = await fetchVPNInformation(event.ipAddress);
 
   if (!vpnInfo) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error fetching VPN information" }),
-    };
+    throw new Error("Error fetching VPN information");
   }
 
   const snsPayload: CustomAnalyticsSNSMessage = {
@@ -36,26 +35,13 @@ export async function handler(event: any) {
     region: vpnInfo.location.region,
     country: vpnInfo.location.country,
   };
-  
+
   const params: PublishCommandInput = {
     Message: JSON.stringify(snsPayload),
     TopicArn: process.env.TOPIC_ARN,
   };
 
-
-  try {
-    const command = new PublishCommand(params);
-    const result = await snsClient.send(command);
-    console.log("Message published to SNS:", result);
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "Message published successfully!" }),
-    };
-  } catch (error) {
-    console.error("Error publishing to SNS:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error publishing message" }),
-    };
-  }
+  const command = new PublishCommand(params);
+  const result = await snsClient.send(command);
+  console.log("Message published to SNS:", result);
 }
