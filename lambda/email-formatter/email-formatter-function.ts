@@ -3,17 +3,17 @@ import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 
 const lambdaClient = new LambdaClient();
 
-export async function handler(event: SNSEvent) {
+export async function handler(event: SNSEvent): Promise<void> {
   console.log(event);
+
+  const message = event.Records[0].Sns.Message;
   if (!process.env.EMAIL_FUNCTION_ARN) {
-    throw Error(
-      "Missing required environment variables (EMAIL_FUNCTION_ARN)",
-    );
+    throw Error("Missing required environment variables (EMAIL_FUNCTION_ARN)");
   }
 
   const params = {
     FunctionName: process.env.EMAIL_FUNCTION_ARN,
-    Payload: JSON.stringify(event),
+    Payload: JSON.stringify(message),
   };
 
   try {
@@ -23,9 +23,4 @@ export async function handler(event: SNSEvent) {
   } catch (error) {
     console.error("Error invoking Lambda function:", error);
   }
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ message: "Email formatter function!" }),
-  };
 }
