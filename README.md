@@ -68,4 +68,9 @@ Takes page views and put them into an email template
 }
 ```
 ### Output
-- None
+```
+{
+    subject: string;
+    text: string;
+}
+```
