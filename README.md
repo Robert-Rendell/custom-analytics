@@ -40,7 +40,10 @@ Records page views in DynamoDB for historical stats
     dateTime: string;
     latLng: string;
     provider: string;
-    vpn: boolean; 
+    vpn: boolean;
+    city: string;
+    region: string;
+    country: string;
 }
 ```
 ### Output
@@ -58,7 +61,10 @@ Takes page views and put them into an email template
     dateTime: string;
     latLng: string;
     provider: string;
-    vpn: boolean; 
+    vpn: boolean;
+    city: string;
+    region: string;
+    country: string;
 }
 ```
 ### Output
