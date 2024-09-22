@@ -18,7 +18,7 @@ export async function handler(event: SNSEvent): Promise<void> {
 
   const params = {
     FunctionName: process.env.EMAIL_FUNCTION_ARN,
-    Payload: JSON.stringify(payload),
+    Payload: JSON.stringify(payload, null, 2),
   };
 
   try {
