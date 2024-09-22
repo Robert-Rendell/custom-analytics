@@ -1,10 +1,23 @@
-import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
+import {
+  SNSClient,
+  PublishCommand,
+  PublishCommandInput,
+} from "@aws-sdk/client-sns";
+import { CustomAnalyticsSNSMessage } from "../../types/CustomAnalyticsSNSMessage";
 
 const snsClient = new SNSClient();
 
 export async function handler(event: any) {
-  const params = {
-    Message: "Hello from Lambda to SNS!", // Message to publish
+  const snsPayload: CustomAnalyticsSNSMessage = {
+    browserAgent: "",
+    ipAddress: "",
+    dateTime: "",
+    latLng: "",
+    provider: "",
+    vpn: false,
+  };
+  const params: PublishCommandInput = {
+    Message: JSON.stringify(snsPayload), // Message to publish
     TopicArn: process.env.TOPIC_ARN, // Pass the topic ARN as an environment variable
   };
 

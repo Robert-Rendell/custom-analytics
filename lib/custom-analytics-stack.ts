@@ -32,6 +32,20 @@ export class CustomAnalyticsStack extends cdk.Stack {
       },
     });
 
+    const emailFormatterFunction = new lambda.Function(
+      this,
+      "EmailFormatterFunction",
+      {
+        runtime: lambda.Runtime.NODEJS_20_X,
+        handler: "email-formatter.handler",
+        code: lambda.Code.fromAsset("lambda/email-formatter"),
+        environment: {
+          EMAIL_FUNCTION_ARN: process.env.EMAIL_FUNCTION_ARN,
+        },
+      },
+    );
+
+    // decoupled from the stack as it is a generic function
     const emailFunction = lambda.Function.fromFunctionArn(
       this,
       "EmailFunction",
@@ -48,8 +62,15 @@ export class CustomAnalyticsStack extends cdk.Stack {
     topic.grantPublish(requestFunction);
 
     // Fan out to subscribers
-    topic.addSubscription(new subs.LambdaSubscription(emailFunction));
+    topic.addSubscription(new subs.LambdaSubscription(emailFormatterFunction));
     topic.addSubscription(new subs.LambdaSubscription(pageViewFunction));
+
+    emailFormatterFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["lambda:InvokeFunction"],
+        resources: [emailFunction.functionArn],
+      }),
+    );
 
     // Define a CloudFormation output for the entry point function ARN
     new cdk.CfnOutput(this, "RequestFunctionARN", {
