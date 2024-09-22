@@ -30,7 +30,7 @@ describe("RequestFunction", () => {
         vpn: true,
       },
     };
-    jest.spyOn(global, "fetch").mockResolvedValue({
+    const fetchMock = jest.spyOn(global, "fetch").mockResolvedValue({
       json: () => Promise.resolve(mockedFetch),
     } as any);
 
@@ -46,5 +46,6 @@ describe("RequestFunction", () => {
     }
 
     expect(errors).toBeUndefined();
+    expect(fetchMock).toHaveBeenCalled();
   });
 });

@@ -6,8 +6,6 @@ import {
 import { CustomAnalyticsSNSMessage } from "../../types/CustomAnalyticsSNSMessage";
 import { fetchVPNInformation } from "./fetch-vpn-info";
 import { RequestFnEventBody } from "./types/event-body";
-import { config } from "dotenv";
-config();
 
 const snsClient = new SNSClient();
 
