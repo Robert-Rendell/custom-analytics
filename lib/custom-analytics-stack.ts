@@ -5,7 +5,6 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as iam from "aws-cdk-lib/aws-iam"; // For granting permissions
 import { Construct } from "constructs";
 import { config } from "dotenv";
-import { RequestLambdaEnvVars } from "../lambda/request/types/env-vars";
 
 config();
 
