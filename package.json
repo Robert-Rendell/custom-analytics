@@ -10,7 +10,7 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "clean": "rm ./lambda/**/*.js | rm ./lambda/**/*.d.ts | rm ./test/*.js | rm ./test/*.d.ts"
+    "clean": "rm ./lib/*.js | rm ./lib/*.d.ts | rm ./lambda/**/*.js | rm ./lambda/**/*.d.ts | rm ./test/*.js | rm ./test/*.d.ts"
   },
   "devDependencies": {
     "@aws-sdk/client-lambda": "^3.656.0",

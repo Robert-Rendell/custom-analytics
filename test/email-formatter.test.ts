@@ -1,5 +1,5 @@
 import { SNSEvent } from "aws-lambda";
-import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
+import { LambdaClient } from "@aws-sdk/client-lambda";
 import { handler } from "../lambda/email-formatter/email-formatter-function";
 
 jest.mock("@aws-sdk/client-lambda");

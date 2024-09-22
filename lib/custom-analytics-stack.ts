@@ -5,15 +5,16 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as iam from "aws-cdk-lib/aws-iam"; // For granting permissions
 import { Construct } from "constructs";
 import { config } from "dotenv";
+import { RequestLambdaEnvVars } from "../lambda/request/types/env-vars";
 
 config();
 
 export class CustomAnalyticsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-    if (!process.env.EMAIL_FUNCTION_ARN) {
+    if (!process.env.EMAIL_FUNCTION_ARN || !process.env.VPNInfoServiceAPIKey) {
       throw Error(
-        "Missing required environment variables (EMAIL_FUNCTION_ARN)",
+        "Missing required environment variables (EMAIL_FUNCTION_ARN, VPN_INFO_SERVICE_API_KEY)",
       );
     }
 
@@ -29,6 +30,7 @@ export class CustomAnalyticsStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(10),
       environment: {
         TOPIC_ARN: topic.topicArn,
+        VPN_INFO_SERVICE_API_KEY: process.env.VPNInfoServiceAPIKey,
       },
     });
 
