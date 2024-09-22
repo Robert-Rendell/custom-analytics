@@ -7,6 +7,7 @@ Fetches information about the request
 ### Input
 ```
 {
+    pageRoute: string;
     browserAgent: string;
     ipAddress: string;
     dateTime: string;
@@ -15,6 +16,7 @@ Fetches information about the request
 ### Output
 ```
 {
+    pageRoute: string;
     browserAgent: string;
     ipAddress: string;
     dateTime: string;
@@ -32,6 +34,7 @@ Records page views in DynamoDB for historical stats
 ### Input
 ```
 {
+    pageRoute: string;
     browserAgent: string;
     ipAddress: string;
     dateTime: string;
@@ -49,6 +52,7 @@ Takes page views and put them into an email template
 ### Input
 ```
 {
+    pageRoute: string;
     browserAgent: string;
     ipAddress: string;
     dateTime: string;

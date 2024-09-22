@@ -1,5 +1,6 @@
 import { handler } from "../lambda/request/request-function";
 import { SNSClient } from "@aws-sdk/client-sns";
+import { RequestFnEventBody } from "../lambda/request/types/event-body";
 
 jest.mock("@aws-sdk/client-sns");
 
@@ -35,12 +36,14 @@ describe("RequestFunction", () => {
     } as any);
 
     let errors;
+    const req: RequestFnEventBody = {
+      browserAgent: "Mozilla/5.0",
+      ipAddress: "217.146.93.112",
+      dateTime: "2021-10-10T00:00:00Z",
+      pageRoute: "/some-route",
+    };
     try {
-      await handler({
-        browserAgent: "Mozilla/5.0",
-        ipAddress: "217.146.93.112",
-        dateTime: "2021-10-10T00:00:00Z",
-      });
+      await handler(req);
     } catch (e) {
       errors = e;
     }

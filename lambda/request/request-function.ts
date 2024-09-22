@@ -10,13 +10,19 @@ import { RequestFnEventBody } from "./types/event-body";
 const snsClient = new SNSClient();
 
 const isValidEvent = (event: any): event is RequestFnEventBody => {
-  return event && event.browserAgent && event.ipAddress && event.dateTime;
+  return (
+    event &&
+    event.pageRoute &&
+    event.browserAgent &&
+    event.ipAddress &&
+    event.dateTime
+  );
 };
 
 export async function handler(event: any | RequestFnEventBody) {
   if (!isValidEvent(event)) {
     throw new Error(
-      "Missing one or more required fields in payload: browserAgent, ipAddress, dateTime",
+      "Missing one or more required fields in payload: pageRoute, browserAgent, ipAddress, dateTime",
     );
   }
 
