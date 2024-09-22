@@ -37,7 +37,7 @@ export class CustomAnalyticsStack extends cdk.Stack {
       "EmailFormatterFunction",
       {
         runtime: lambda.Runtime.NODEJS_20_X,
-        handler: "email-formatter.handler",
+        handler: "email-formatter-function.handler",
         code: lambda.Code.fromAsset("lambda/email-formatter"),
         environment: {
           EMAIL_FUNCTION_ARN: process.env.EMAIL_FUNCTION_ARN,
