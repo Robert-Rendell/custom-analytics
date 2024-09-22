@@ -20,7 +20,10 @@ Fetches information about the request
     dateTime: string;
     latLng: string;
     provider: string;
-    vpn: boolean; 
+    vpn: boolean;
+    city: string;
+    region: string;
+    country: string;
 }
 ```
 
