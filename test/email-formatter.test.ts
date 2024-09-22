@@ -9,8 +9,9 @@ describe("email-formatter-function", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.EMAIL_FUNCTION_ARN = "arn:aws:lambda:us-east-1:123456789012:function:emailFunction";
-    mockSend = jest.spyOn(LambdaClient.prototype, 'send').mockImplementation();
+    process.env.EMAIL_FUNCTION_ARN =
+      "arn:aws:lambda:us-east-1:123456789012:function:emailFunction";
+    mockSend = jest.spyOn(LambdaClient.prototype, "send").mockImplementation();
   });
 
   it("should throw an error if EMAIL_FUNCTION_ARN is not set", async () => {
@@ -27,7 +28,7 @@ describe("email-formatter-function", () => {
     } as any;
 
     await expect(handler(event)).rejects.toThrow(
-      "Missing required environment variables (EMAIL_FUNCTION_ARN)"
+      "Missing required environment variables (EMAIL_FUNCTION_ARN)",
     );
   });
 
@@ -51,6 +52,9 @@ describe("email-formatter-function", () => {
     await handler(event);
 
     expect(console.log).toHaveBeenCalledWith(event);
-    expect(console.error).toHaveBeenCalledWith("Error invoking Lambda function:", error);
+    expect(console.error).toHaveBeenCalledWith(
+      "Error invoking Lambda function:",
+      error,
+    );
   });
 });
