@@ -11,14 +11,21 @@ export async function handler(event: SNSEvent): Promise<void> {
     throw Error("Missing required environment variables (EMAIL_FUNCTION_ARN)");
   }
 
+  const jsonMsg = JSON.parse(message);
+
+  const htmlTable = `<table>${Object.entries(jsonMsg)
+    .map(([k, v]) => {
+      return `<tr><td>${k}</td><td>${v}</td></tr>`;
+    })
+    .reduce((acc, curr) => acc + curr, "")}</table>`;
+
   const payload = {
     subject: "New Page View",
-    text: message,
+    html: htmlTable,
   };
-
   const params = {
     FunctionName: process.env.EMAIL_FUNCTION_ARN,
-    Payload: JSON.stringify(payload, null, 2),
+    Payload: JSON.stringify(payload),
   };
 
   try {
