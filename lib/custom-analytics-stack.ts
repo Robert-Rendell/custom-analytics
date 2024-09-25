@@ -72,7 +72,7 @@ export class CustomAnalyticsStack extends cdk.Stack {
       "PageViewsTable",
       process.env.PAGE_VIEWS_DYNAMO_DB_TABLE,
     );
-    table.grantWriteData(pageViewFunction);
+    table.grantReadWriteData(pageViewFunction);
 
     // Fan out to subscribers
     topic.addSubscription(new subs.LambdaSubscription(emailFormatterFunction));
