@@ -5,7 +5,7 @@
     "custom-analytics": "bin/custom-analytics.js"
   },
   "scripts": {
-    "format": "prettier -w \"./lambda/**/*.ts\"",
+    "format": "prettier -w \"./lambda/**/*.ts\" \"./lib/**/*.ts\"",
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",

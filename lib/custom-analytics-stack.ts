@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import * as sns from "aws-cdk-lib/aws-sns";
 import * as subs from "aws-cdk-lib/aws-sns-subscriptions";
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as iam from "aws-cdk-lib/aws-iam"; // For granting permissions
 import { Construct } from "constructs";
 import { config } from "dotenv";
@@ -64,14 +65,20 @@ export class CustomAnalyticsStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(10),
       environment: {
         PAGE_VIEWS_DYNAMO_DB_TABLE: process.env.PAGE_VIEWS_DYNAMO_DB_TABLE,
-      }
+      },
     });
-
-    topic.grantPublish(requestFunction);
+    const table = dynamodb.Table.fromTableArn(
+      this,
+      "PageViewsTable",
+      process.env.PAGE_VIEWS_DYNAMO_DB_TABLE,
+    );
+    table.grantWriteData(pageViewFunction);
 
     // Fan out to subscribers
     topic.addSubscription(new subs.LambdaSubscription(emailFormatterFunction));
     topic.addSubscription(new subs.LambdaSubscription(pageViewFunction));
+
+    topic.grantPublish(requestFunction);
 
     emailFormatterFunction.addToRolePolicy(
       new iam.PolicyStatement({
