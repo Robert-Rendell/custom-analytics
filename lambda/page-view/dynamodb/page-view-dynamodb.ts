@@ -3,7 +3,7 @@ import {
   PageUrl,
   PageView,
   PageViewerDocument,
-  PageViewRequest,
+  PageViewV2,
 } from "../types/page-view";
 import { DynamoDBService } from "./dynamodb-service";
 
@@ -25,13 +25,13 @@ export class PageViewsDynamoDbService extends DynamoDBService {
     pageView,
   }: {
     pageUrl: PageUrl;
-    pageView: PageView;
+    pageView: PageViewV2;
   }): Promise<PageViewerDocument> {
     const currentPage = (await PageViewsDynamoDbService.getPageView(
       pageUrl,
     )) ?? {
       pageUrl,
-      views: <PageView[]>[],
+      views: <(PageView | PageViewV2)[]>[],
       total: 0,
     };
     const uniquePageViews = new Set(

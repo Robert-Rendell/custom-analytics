@@ -1,30 +1,44 @@
 import { SNSEvent } from "aws-lambda";
 import { PageViewsDynamoDbService } from "./dynamodb/page-view-dynamodb";
 import { CustomAnalyticsSNSMessage } from "../../types/CustomAnalyticsSNSMessage";
+import { PageViewV2 } from "./types/page-view";
 
 export async function handler(event: SNSEvent) {
   console.log(event);
   const message = event.Records[0].Sns.Message;
-  const pageView: CustomAnalyticsSNSMessage = JSON.parse(message);
+  const {
+    dateTime,
+    latLng,
+    ipAddress,
+    city,
+    country,
+    region,
+    pageRoute,
+    vpn,
+    provider,
+    browserAgent,
+  }: CustomAnalyticsSNSMessage = JSON.parse(message);
 
-  const [lat, Lng] = pageView.latLng.split(",").map((val) => parseFloat(val));
+  const [lat, Lng] = latLng.split(",").map((val) => parseFloat(val));
 
-  await PageViewsDynamoDbService.savePageView({
-    pageView: {
-      dateTime: pageView.dateTime,
-      ipAddress: pageView.ipAddress,
-      ipLocation: {
-        city: pageView.city,
-        country: pageView.country,
-        eu: "", // Losing this
-        ll: [lat, Lng],
-        metro: 0, // Losing this
-        range: [0, 0], // Losing this
-        region: pageView.region,
-        timezone: "", // Losing this
-        area: 0, // Losing this
-      },
+  const pageView: PageViewV2 = {
+    dateTime,
+    ipAddress,
+    ipLocation: {
+      city,
+      country,
+      ll: [lat, Lng],
+      region,
     },
-    pageUrl: pageView.pageRoute,
+    vpn,
+    provider,
+    userAgent: browserAgent,
+  };
+
+  const result = await PageViewsDynamoDbService.savePageView({
+    pageView,
+    pageUrl: pageRoute,
   });
+
+  console.log(result);
 }

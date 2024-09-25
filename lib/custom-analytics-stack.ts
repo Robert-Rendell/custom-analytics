@@ -13,10 +13,11 @@ export class CustomAnalyticsStack extends cdk.Stack {
     super(scope, id, props);
     if (
       !process.env.EMAIL_FUNCTION_ARN ||
-      !process.env.VPN_INFO_SERVICE_API_KEY
+      !process.env.VPN_INFO_SERVICE_API_KEY ||
+      !process.env.PAGE_VIEWS_DYNAMO_DB_TABLE
     ) {
       throw Error(
-        "Missing required environment variables (EMAIL_FUNCTION_ARN, VPN_INFO_SERVICE_API_KEY)",
+        "Missing required environment variables (EMAIL_FUNCTION_ARN, VPN_INFO_SERVICE_API_KEY, PAGE_VIEWS_DYNAMO_DB_TABLE)",
       );
     }
 
@@ -61,6 +62,9 @@ export class CustomAnalyticsStack extends cdk.Stack {
       code: lambda.Code.fromAsset("lambda/page-view"),
       handler: "page-view-function.handler",
       timeout: cdk.Duration.seconds(10),
+      environment: {
+        PAGE_VIEWS_DYNAMO_DB_TABLE: process.env.PAGE_VIEWS_DYNAMO_DB_TABLE,
+      }
     });
 
     topic.grantPublish(requestFunction);
