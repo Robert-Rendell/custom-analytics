@@ -40,5 +40,5 @@ export async function handler(event: SNSEvent) {
     pageUrl: pageRoute,
   });
 
-  console.log(result);
+  console.log(result.pageUrl, "Total unique views:", result.total);
 }
