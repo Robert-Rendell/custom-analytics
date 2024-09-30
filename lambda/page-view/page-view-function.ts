@@ -45,6 +45,6 @@ export async function handler(event: SNSEvent) {
     "Total unique views:",
     result.total,
     "Total views: ",
-    console.log(result.views.length),
+    result.views.length,
   );
 }

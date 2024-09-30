@@ -10,7 +10,7 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "clean": "rm -r ./lib/*.js ./lib/*.d.ts ./lambda/**/*.js ./lambda/***/*.d.ts ./test/*.js ./test/*.d.ts"
+    "clean": "find ./lib -name '*.js' -delete && find ./lib -name '*.d.ts' -delete && find ./lambda -name '*.js' -delete && find ./lambda -name '*.d.ts' -delete && find ./test -name '*.js' -delete && find ./test -name '*.d.ts' -delete"
   },
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.656.0",
