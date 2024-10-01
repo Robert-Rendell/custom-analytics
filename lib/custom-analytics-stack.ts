@@ -1,9 +1,13 @@
 import * as cdk from "aws-cdk-lib";
 import * as sns from "aws-cdk-lib/aws-sns";
+import * as sqs from "aws-cdk-lib/aws-sqs";
+import * as s3 from "aws-cdk-lib/aws-s3";
 import * as subs from "aws-cdk-lib/aws-sns-subscriptions";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as iam from "aws-cdk-lib/aws-iam"; // For granting permissions
+import * as events from "aws-cdk-lib/aws-events";
+import * as targets from "aws-cdk-lib/aws-events-targets";
 import { Construct } from "constructs";
 import { config } from "dotenv";
 
@@ -22,11 +26,12 @@ export class CustomAnalyticsStack extends cdk.Stack {
       );
     }
 
+    // Topic has three subscribers: EmailFormatterFunction, PageViewFunction and AnalysisQueue
     const topic = new sns.Topic(this, "CustomAnalyticsTopic", {
       displayName: "Custom Analytics Topic",
     });
 
-    // Entry point for the stack
+    // -------------- Request Function (entry point) --------------
     const requestFunction = new lambda.Function(this, "RequestFunction", {
       runtime: lambda.Runtime.NODEJS_20_X,
       code: lambda.Code.fromAsset("lambda/request"),
@@ -38,6 +43,43 @@ export class CustomAnalyticsStack extends cdk.Stack {
       },
     });
 
+    topic.grantPublish(requestFunction);
+
+    // -------------- Analysis Queue + Function + S3 --------------
+    const analysisQueue = new sqs.Queue(this, "AnalysisQueue", {
+      visibilityTimeout: cdk.Duration.seconds(30),
+      retentionPeriod: cdk.Duration.days(1),
+    });
+
+    topic.addSubscription(new subs.SqsSubscription(analysisQueue));
+
+    const analysisBucket = new s3.Bucket(this, "AnalysisBucket", {
+      versioned: false,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+
+    const analysisFunction = new lambda.Function(this, "AnalysisFunction", {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      code: lambda.Code.fromAsset("lambda/analysis"),
+      handler: "analysis-function.handler",
+      timeout: cdk.Duration.seconds(5),
+      environment: {
+        QUEUE_URL: analysisQueue.queueUrl,
+        ANALYSIS_BUCKET_NAME: analysisBucket.bucketName,
+      },
+    });
+
+    analysisQueue.grantConsumeMessages(analysisFunction);
+
+    const rule = new events.Rule(this, "DailyAnalysisRule", {
+      schedule: events.Schedule.rate(cdk.Duration.days(1)),
+    });
+
+    rule.addTarget(new targets.LambdaFunction(analysisFunction));
+    analysisBucket.grantReadWrite(analysisFunction);
+
+    // -------------- Email Formatter + Email Function --------------
     const emailFormatterFunction = new lambda.Function(
       this,
       "EmailFormatterFunction",
@@ -51,6 +93,8 @@ export class CustomAnalyticsStack extends cdk.Stack {
       },
     );
 
+    topic.addSubscription(new subs.LambdaSubscription(emailFormatterFunction));
+
     // decoupled from the stack as it is a generic function
     const emailFunction = lambda.Function.fromFunctionArn(
       this,
@@ -58,6 +102,14 @@ export class CustomAnalyticsStack extends cdk.Stack {
       process.env.EMAIL_FUNCTION_ARN,
     );
 
+    emailFormatterFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["lambda:InvokeFunction"],
+        resources: [emailFunction.functionArn],
+      }),
+    );
+
+    // -------------- Page View Function --------------
     const pageViewFunction = new lambda.Function(this, "PageViewFunction", {
       runtime: lambda.Runtime.NODEJS_20_X,
       code: lambda.Code.fromAsset("lambda/page-view"),
@@ -72,20 +124,9 @@ export class CustomAnalyticsStack extends cdk.Stack {
       "PageViewsTable",
       process.env.PAGE_VIEWS_DYNAMO_DB_TABLE,
     );
+
     table.grantReadWriteData(pageViewFunction);
-
-    // Fan out to subscribers
-    topic.addSubscription(new subs.LambdaSubscription(emailFormatterFunction));
     topic.addSubscription(new subs.LambdaSubscription(pageViewFunction));
-
-    topic.grantPublish(requestFunction);
-
-    emailFormatterFunction.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: ["lambda:InvokeFunction"],
-        resources: [emailFunction.functionArn],
-      }),
-    );
 
     // Define a CloudFormation output for the entry point function ARN
     new cdk.CfnOutput(this, "RequestFunctionARN", {
