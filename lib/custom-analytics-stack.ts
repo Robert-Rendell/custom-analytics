@@ -64,7 +64,7 @@ export class CustomAnalyticsStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_20_X,
       code: lambda.Code.fromAsset("lambda/analysis"),
       handler: "analysis-function.handler",
-      timeout: cdk.Duration.seconds(5),
+      timeout: cdk.Duration.seconds(10),
       environment: {
         QUEUE_URL: analysisQueue.queueUrl,
         ANALYSIS_BUCKET_NAME: analysisBucket.bucketName,
@@ -93,6 +93,7 @@ export class CustomAnalyticsStack extends cdk.Stack {
         environment: {
           EMAIL_FUNCTION_ARN: process.env.EMAIL_FUNCTION_ARN,
         },
+        timeout: cdk.Duration.seconds(10),
       },
     );
 
