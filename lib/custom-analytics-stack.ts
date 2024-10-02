@@ -10,6 +10,7 @@ import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
 import { Construct } from "constructs";
 import { config } from "dotenv";
+import * as lambdaEventSources from "aws-cdk-lib/aws-lambda-event-sources";
 
 config();
 
@@ -68,16 +69,18 @@ export class CustomAnalyticsStack extends cdk.Stack {
         QUEUE_URL: analysisQueue.queueUrl,
         ANALYSIS_BUCKET_NAME: analysisBucket.bucketName,
       },
+      reservedConcurrentExecutions: 1, // Set reserved concurrency to 1
     });
 
     analysisQueue.grantConsumeMessages(analysisFunction);
 
-    const rule = new events.Rule(this, "DailyAnalysisRule", {
-      schedule: events.Schedule.rate(cdk.Duration.days(1)),
-    });
-
-    rule.addTarget(new targets.LambdaFunction(analysisFunction));
     analysisBucket.grantReadWrite(analysisFunction);
+
+    analysisFunction.addEventSource(
+      new lambdaEventSources.SqsEventSource(analysisQueue, {
+        batchSize: 10,
+      }),
+    );
 
     // -------------- Email Formatter + Email Function --------------
     const emailFormatterFunction = new lambda.Function(
